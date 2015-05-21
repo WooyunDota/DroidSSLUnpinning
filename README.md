@@ -1,2 +1,2 @@
 # IgnoreSSL
-A xposed module which can disable android ssl cer chech
+A xposed module which can disable android client ssl check 
