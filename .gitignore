@@ -25,4 +25,4 @@ build/
 *.bak
 # Android
 gen/
-bin/
+NetworkHook/bin/
