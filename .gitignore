@@ -1,0 +1,27 @@
+# Java
+*.class
+# Idea
+.idea/
+out/
+*.ipr
+*.iml
+*.iws
+# Eclipse
+.settings/
+classes/
+.classpath
+.project
+# Mac
+.DS_Store
+#Windows
+Thumbs.db
+# Maven
+log/
+target/
+# Gradle
+.gradle/
+build/
+# WinMerge
+*.bak
+# Android
+gen/
