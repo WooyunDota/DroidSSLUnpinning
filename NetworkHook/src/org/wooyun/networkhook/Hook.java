@@ -50,7 +50,7 @@ import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 
 
-public class Main implements IXposedHookLoadPackage {
+public class Hook implements IXposedHookLoadPackage {
     
     
     public void handleLoadPackage(final LoadPackageParam lpparam) throws Throwable {
