@@ -1,6 +1,6 @@
 # 安卓证书锁定解除的工具
 
-** 经常有朋友问我,手机安装代理证书后这个app的https流量依然抓不到包该如何操作,这样情况基本是遇到证书锁定了,分享下我的操作. **
+**经常有朋友问我,手机安装代理证书后这个app的https流量依然抓不到明文包该如何操作,这种情况基本是遇到证书锁定了,分享下我的操作.**
 
 - [x] 目录JustTrustMePlus加了些JusTrustMe没覆盖到的锁定场景.(基于xposed模块[justTrustMe](https://github.com/Fuzion24/JustTrustMe)稍作修改)
 	- 使用方法1 : 安装激活xposed后,安装目录下提供的apk,勾选jusTrustMe模块激活重启即可.
