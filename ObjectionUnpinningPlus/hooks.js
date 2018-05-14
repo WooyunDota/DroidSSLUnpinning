@@ -15,7 +15,7 @@ hook list:
 // accept any SSL certificate, overriding OkHTTP v3 check()
 // method etc.
 
-var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
+// var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
 var X509TrustManager = Java.use('javax.net.ssl.X509TrustManager');
 var SSLContext = Java.use('javax.net.ssl.SSLContext');
 var quiet_output = false;
