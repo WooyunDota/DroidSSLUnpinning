@@ -8,6 +8,7 @@ hook list:
 4.XUtils
 5.httpclientandroidlib
 6.JSSE
+7.network_security_config(7.0+ only)
 */
 
 // Attempts to bypass SSL pinning implementations in a number of
@@ -263,6 +264,19 @@ try {
     }
 } catch (e) {
     console.log("httpclientandroidlib Hooks not found");
+}
+
+/*** android 7.0+ network_security_config TrustManagerImpl hook ***/
+try {
+    var TrustManagerImpl = Java.use("com.android.org.conscrypt.TrustManagerImpl");
+    // Android 7+ TrustManagerImpl
+    TrustManagerImpl.verifyChain.implementation = function (untrustedChain, trustAnchorChain, host, clientAuth, ocspData, tlsSctData) {
+        // Skip all the logic and just return the chain again :P
+        //https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2017/november/bypassing-androids-network-security-configuration 		//https://github.com/google/conscrypt/blob/c88f9f55a523f128f0e4dace76a34724bfa1e88c/platform/src/main/java/org/conscrypt/TrustManagerImpl.java#L650
+        return untrustedChain;
+    }
+} catch (e) {
+    console.log("TrustManagerImpl verifyChain nout found below 7.0");
 }
 
 /*** Apache http Hooks ***/
