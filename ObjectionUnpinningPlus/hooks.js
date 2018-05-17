@@ -8,7 +8,8 @@ hook list:
 4.XUtils
 5.httpclientandroidlib
 6.JSSE
-7.network_security_config(7.0+ only)
+7.network\_security\_config (android 7.0+)
+8.Apache Http client (support partly)
 */
 
 // Attempts to bypass SSL pinning implementations in a number of
@@ -16,7 +17,7 @@ hook list:
 // accept any SSL certificate, overriding OkHTTP v3 check()
 // method etc.
 
-// var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
+var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
 var X509TrustManager = Java.use('javax.net.ssl.X509TrustManager');
 var SSLContext = Java.use('javax.net.ssl.SSLContext');
 var quiet_output = false;
@@ -266,46 +267,28 @@ try {
     console.log("httpclientandroidlib Hooks not found");
 }
 
-/*** android 7.0+ network_security_config TrustManagerImpl hook ***/
+/***
+android 7.0+ network_security_config TrustManagerImpl hook
+apache httpclient partly
+***/
 try {
     var TrustManagerImpl = Java.use("com.android.org.conscrypt.TrustManagerImpl");
+    var Arrays = Java.use("java.util.Arrays");
+    //apache http client pinning maybe baypass
+    TrustManagerImpl.checkTrusted.implementation = function (chain, authType, session, parameters, authType) {
+        quiet_send("checkTrusted called");
+        return Arrays.asList(chain);
+    }
     // Android 7+ TrustManagerImpl
     TrustManagerImpl.verifyChain.implementation = function (untrustedChain, trustAnchorChain, host, clientAuth, ocspData, tlsSctData) {
         // Skip all the logic and just return the chain again :P
-        //https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2017/november/bypassing-androids-network-security-configuration 		//https://github.com/google/conscrypt/blob/c88f9f55a523f128f0e4dace76a34724bfa1e88c/platform/src/main/java/org/conscrypt/TrustManagerImpl.java#L650
+        //https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2017/november/bypassing-androids-network-security-configuration/
+        // https://github.com/google/conscrypt/blob/c88f9f55a523f128f0e4dace76a34724bfa1e88c/platform/src/main/java/org/conscrypt/TrustManagerImpl.java#L650
         return untrustedChain;
     }
 } catch (e) {
     console.log("TrustManagerImpl verifyChain nout found below 7.0");
 }
-
-/*** Apache http Hooks ***/
-/* android6.0 api23 开始不集成Apache http client , 还想用Apache httpClient的话需自己集成到app中,所以实际使用者变少*/
-
-// var SSLSocketFactory = Java.use("org.apache.http.conn.ssl.SSLSocketFactory");
-// /* external/apache-http/src/org/apache/http/conn/ssl/SSLSocketFactory.java */
-// /* public SSLSocketFactory( ... ) */
-//
-// SSLSocketFactory.$init.implementation = function(algorithm,keystore,keystorePassword,random){
-//     quiet_send("keystorePassword = " + keystorePassword);
-//
-//     return this.$init.call(this,algorithm,keystore,keystorePassword,random);
-// }
-//
-// /* external/apache-http/src/org/apache/http/conn/ssl/SSLSocketFactory.java */
-// /* public static SSLSocketFactory getSocketFactory() */
-// SSLSocketFactory.getSocketFactory.implementation = function(){
-//     return SSLSocketFactory.$new();
-// }
-//
-// /* external/apache-http/src/org/apache/http/conn/ssl/SSLSocketFactory.java */
-// /* public boolean isSecure(Socket) */
-//
-// SSLSocketFactory.isSecure.implementation = function (){
-//
-//     return true;
-// }
-
 // -- Sample Java
 //
 // "Generic" TrustManager Example
