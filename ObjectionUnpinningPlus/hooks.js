@@ -35,28 +35,29 @@ function quiet_send(data) {
 
 
 
-// //Implement a new HostnameVerifier
-// var TrustHostnameVerifier;
-// try {
-//     TrustHostnameVerifier = Java.registerClass({
-//         name: 'org.wooyun.TrustHostnameVerifier',
-//         implements: [HostnameVerifier],
-//         method: {
-//             verify: function (hostname, session) {
-//                 return true;
-//             }
-//         }
-//     });
-//
-// } catch (e) {
-//     //java.lang.ClassNotFoundException: Didn't find class "org.wooyun.TrustHostnameVerifier"
-//     console.log("registerClass from hostnameVerifier >>>>>>>> " + e.message);
-// }
+//Implement a new HostnameVerifier
+var TrustHostnameVerifier;
+try {
+    TrustHostnameVerifier = Java.registerClass({
+        name: 'org.wooyun.TrustHostnameVerifier',
+        implements: [HostnameVerifier],
+        method: {
+            verify: function (hostname, session) {
+                return true;
+            }
+        }
+    });
+
+} catch (e) {
+    //java.lang.ClassNotFoundException: Didn't find class "org.wooyun.TrustHostnameVerifier"
+    console.log("registerClass from hostnameVerifier >>>>>>>> " + e.message);
+}
 
 // Implement a new TrustManager
 // ref: https://gist.github.com/oleavr/3ca67a173ff7d207c6b8c3b0ca65a9d8
 // Java.registerClass() is only supported on ART for now(201803). 所以android 4.4以下不兼容,4.4要切换成ART使用.
 
+var X509Certificate = Java.use("java.security.cert.X509Certificate");
 var TrustManager;
 try {
     TrustManager = Java.registerClass({
@@ -68,7 +69,8 @@ try {
             checkServerTrusted: function (chain, authType) {
             },
             getAcceptedIssuers: function () {
-                return [];
+                var certs = [X509Certificate.$new()];
+                return certs;
             }
         }
     });
@@ -115,7 +117,7 @@ try {
 
     var CertificatePinner = Java.use('okhttp3.CertificatePinner');
 
-    send('OkHTTP 3.x Found');
+    console.log('OkHTTP 3.x Found');
 
     CertificatePinner.check.overload('java.lang.String', 'java.util.List').implementation = function () {
 
@@ -247,10 +249,10 @@ try {
         return null;
     }
 
-    // RequestParams.setHostnameVerifier.implementation = function(hostnameVerifier){
-    //     hostnameVerifier = TrustHostnameVerifier.$new();
-    //     return null;
-    // }
+    RequestParams.setHostnameVerifier.implementation = function(hostnameVerifier){
+        hostnameVerifier = TrustHostnameVerifier.$new();
+        return null;
+    }
 
 } catch (e) {
     console.log("Xutils hooks not Found");
@@ -271,16 +273,25 @@ try {
 android 7.0+ network_security_config TrustManagerImpl hook
 apache httpclient partly
 ***/
+var TrustManagerImpl = Java.use("com.android.org.conscrypt.TrustManagerImpl");
+// try {
+//     var Arrays = Java.use("java.util.Arrays");
+//     //apache http client pinning maybe baypass
+//     //https://github.com/google/conscrypt/blob/c88f9f55a523f128f0e4dace76a34724bfa1e88c/platform/src/main/java/org/conscrypt/TrustManagerImpl.java#471
+//     TrustManagerImpl.checkTrusted.implementation = function (chain, authType, session, parameters, authType) {
+//         quiet_send("TrustManagerImpl checkTrusted called");
+//         //Generics currently result in java.lang.Object
+//         return Arrays.asList(chain);
+//     }
+//
+// } catch (e) {
+//     console.log("TrustManagerImpl checkTrusted nout found");
+// }
+
 try {
-    var TrustManagerImpl = Java.use("com.android.org.conscrypt.TrustManagerImpl");
-    var Arrays = Java.use("java.util.Arrays");
-    //apache http client pinning maybe baypass
-    TrustManagerImpl.checkTrusted.implementation = function (chain, authType, session, parameters, authType) {
-        quiet_send("checkTrusted called");
-        return Arrays.asList(chain);
-    }
     // Android 7+ TrustManagerImpl
     TrustManagerImpl.verifyChain.implementation = function (untrustedChain, trustAnchorChain, host, clientAuth, ocspData, tlsSctData) {
+        quiet_send("TrustManagerImpl verifyChain called");
         // Skip all the logic and just return the chain again :P
         //https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2017/november/bypassing-androids-network-security-configuration/
         // https://github.com/google/conscrypt/blob/c88f9f55a523f128f0e4dace76a34724bfa1e88c/platform/src/main/java/org/conscrypt/TrustManagerImpl.java#L650
