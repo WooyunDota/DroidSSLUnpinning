@@ -16,9 +16,8 @@ hook list:
 // ways. These include implementing a new TrustManager that will
 // accept any SSL certificate, overriding OkHTTP v3 check()
 // method etc.
-
-var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
 var X509TrustManager = Java.use('javax.net.ssl.X509TrustManager');
+var HostnameVerifier = Java.use('javax.net.ssl.HostnameVerifier');
 var SSLContext = Java.use('javax.net.ssl.SSLContext');
 var quiet_output = false;
 
@@ -34,34 +33,22 @@ function quiet_send(data) {
 }
 
 
-
-//Implement a new HostnameVerifier
-var TrustHostnameVerifier;
-try {
-    TrustHostnameVerifier = Java.registerClass({
-        name: 'org.wooyun.TrustHostnameVerifier',
-        implements: [HostnameVerifier],
-        method: {
-            verify: function (hostname, session) {
-                return true;
-            }
-        }
-    });
-
-} catch (e) {
-    //java.lang.ClassNotFoundException: Didn't find class "org.wooyun.TrustHostnameVerifier"
-    console.log("registerClass from hostnameVerifier >>>>>>>> " + e.message);
-}
-
 // Implement a new TrustManager
 // ref: https://gist.github.com/oleavr/3ca67a173ff7d207c6b8c3b0ca65a9d8
 // Java.registerClass() is only supported on ART for now(201803). 所以android 4.4以下不兼容,4.4要切换成ART使用.
-
+/*
+06-07 16:15:38.541 27021-27073/mi.sslpinningdemo W/System.err: java.lang.IllegalArgumentException: Required method checkServerTrusted(X509Certificate[], String, String, String) missing
+06-07 16:15:38.542 27021-27073/mi.sslpinningdemo W/System.err:     at android.net.http.X509TrustManagerExtensions.<init>(X509TrustManagerExtensions.java:73)
+        at mi.ssl.MiPinningTrustManger.<init>(MiPinningTrustManger.java:61)
+06-07 16:15:38.543 27021-27073/mi.sslpinningdemo W/System.err:     at mi.sslpinningdemo.OkHttpUtil.getSecPinningClient(OkHttpUtil.java:112)
+        at mi.sslpinningdemo.OkHttpUtil.get(OkHttpUtil.java:62)
+        at mi.sslpinningdemo.MainActivity$1$1.run(MainActivity.java:36)
+*/
 var X509Certificate = Java.use("java.security.cert.X509Certificate");
 var TrustManager;
 try {
     TrustManager = Java.registerClass({
-        name: 'com.sensepost.test.TrustManager',
+        name: 'org.wooyun.TrustManager',
         implements: [X509TrustManager],
         methods: {
             checkClientTrusted: function (chain, authType) {
@@ -69,8 +56,9 @@ try {
             checkServerTrusted: function (chain, authType) {
             },
             getAcceptedIssuers: function () {
-                var certs = [X509Certificate.$new()];
-                return certs;
+                // var certs = [X509Certificate.$new()];
+                // return certs;
+                return [];
             }
         }
     });
@@ -105,7 +93,7 @@ SSLContext_init.implementation = function (keyManager, trustManager, secureRando
 
     quiet_send('Overriding SSLContext.init() with the custom TrustManager');
 
-    SSLContext_init.call(this, keyManager, TrustManagers, secureRandom);
+    SSLContext_init.call(this, null, TrustManagers, null);
 };
 
 /*** okhttp3.x unpinning ***/
@@ -241,6 +229,23 @@ HttpsURLConnection.setHostnameVerifier.implementation = function(hostnameVerifie
 };
 
 /*** Xutils3.x hooks ***/
+//Implement a new HostnameVerifier
+var TrustHostnameVerifier;
+try {
+    TrustHostnameVerifier = Java.registerClass({
+        name: 'org.wooyun.TrustHostnameVerifier',
+        implements: [HostnameVerifier],
+        method: {
+            verify: function (hostname, session) {
+                return true;
+            }
+        }
+    });
+
+} catch (e) {
+    //java.lang.ClassNotFoundException: Didn't find class "org.wooyun.TrustHostnameVerifier"
+    console.log("registerClass from hostnameVerifier >>>>>>>> " + e.message);
+}
 
 try {
     var RequestParams = Java.use('org.xutils.http.RequestParams');
