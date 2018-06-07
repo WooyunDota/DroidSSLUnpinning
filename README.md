@@ -5,7 +5,11 @@
 - [x] 目录ObjectionUnpinningPlus加了些ObjectionUnpinning没覆盖到的锁定场景.(基于Frida模块[objection hook pinning](https://github.com/sensepost/objection)稍作修改)
 	- 使用方法1 attach : frida -U com.example.mennomorsink.webviewtest2 --no-pause -l hooks.js
 	- 使用方法2 spawn : python application.py com.example.mennomorsink.webviewtest2
+<<<<<<< HEAD
 	- 更为详细使用方法:参考我的文章 [Frida.Android.Practice](https://github.com/WooyunDota/DroidDrops/2018/Frida.Android.Practice) 实战ssl pinning bypass 章节 .
+=======
+	- 更为详细使用方法:参考我的文章 [Frida.Android.Practice(ssl unpinning)](https://github.com/WooyunDota/DroidDrops/blob/master/2018/Frida.Android.Practice.md) 实战ssl pinning bypass 章节 .
+>>>>>>> 8429b991463300aa515250ef74b1f5d6c9fe3605
 - [x] ObjectionUnpinningPlus hook list:
 	- SSLcontext(ART only)
 	- okhttp
