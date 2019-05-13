@@ -10,6 +10,8 @@ hook list:
 6.JSSE
 7.network\_security\_config (android 7.0+)
 8.Apache Http client (support partly)
+9.OpenSSLSocketImpl
+10.TrustKit
 */
 
 // Attempts to bypass SSL pinning implementations in a number of
@@ -63,7 +65,7 @@ try {
         }
     });
 } catch (e) {
-    console.log("registerClass from X509TrustManager >>>>>>>> " + e.message);
+    quiet_send("registerClass from X509TrustManager >>>>>>>> " + e.message);
 }
 
 
@@ -79,7 +81,7 @@ try {
     TLS_SSLContext.init(null,TrustManagers,null);
     var EmptySSLFactory = TLS_SSLContext.getSocketFactory();
 } catch (e) {
-    console.log(e.message);
+    quiet_send(e.message);
 }
 
 send('Custom, Empty TrustManager ready');
@@ -105,7 +107,7 @@ try {
 
     var CertificatePinner = Java.use('okhttp3.CertificatePinner');
 
-    console.log('OkHTTP 3.x Found');
+    quiet_send('OkHTTP 3.x Found');
 
     CertificatePinner.check.overload('java.lang.String', 'java.util.List').implementation = function () {
 
@@ -154,7 +156,7 @@ try {
     var OkHttpClient = Java.use("com.squareup.okhttp.OkHttpClient");
     OkHttpClient.setCertificatePinner.implementation = function(certificatePinner){
         // do nothing
-        console.log("OkHttpClient.setCertificatePinner Called!");
+        quiet_send("OkHttpClient.setCertificatePinner Called!");
         return this;
     };
 
@@ -162,16 +164,16 @@ try {
     var CertificatePinner = Java.use("com.squareup.okhttp.CertificatePinner");
     CertificatePinner.check.overload('java.lang.String', '[Ljava.security.cert.Certificate;').implementation = function(p0, p1){
         // do nothing
-        console.log("okhttp Called! [Certificate]");
+        quiet_send("okhttp Called! [Certificate]");
         return;
     };
     CertificatePinner.check.overload('java.lang.String', 'java.util.List').implementation = function(p0, p1){
         // do nothing
-        console.log("okhttp Called! [List]");
+        quiet_send("okhttp Called! [List]");
         return;
     };
 } catch (e) {
- console.log("com.squareup.okhttp not found");
+ quiet_send("com.squareup.okhttp not found");
 }
 
 /*** WebView Hooks ***/
@@ -244,7 +246,7 @@ try {
 
 } catch (e) {
     //java.lang.ClassNotFoundException: Didn't find class "org.wooyun.TrustHostnameVerifier"
-    console.log("registerClass from hostnameVerifier >>>>>>>> " + e.message);
+    quiet_send("registerClass from hostnameVerifier >>>>>>>> " + e.message);
 }
 
 try {
@@ -260,7 +262,7 @@ try {
     }
 
 } catch (e) {
-    console.log("Xutils hooks not Found");
+    quiet_send("Xutils hooks not Found");
 }
 
 /*** httpclientandroidlib Hooks ***/
@@ -271,7 +273,7 @@ try {
         return null;
     }
 } catch (e) {
-    console.log("httpclientandroidlib Hooks not found");
+    quiet_send("httpclientandroidlib Hooks not found");
 }
 
 /***
@@ -290,7 +292,7 @@ var TrustManagerImpl = Java.use("com.android.org.conscrypt.TrustManagerImpl");
 //     }
 //
 // } catch (e) {
-//     console.log("TrustManagerImpl checkTrusted nout found");
+//     quiet_send("TrustManagerImpl checkTrusted nout found");
 // }
 
 try {
@@ -303,8 +305,36 @@ try {
         return untrustedChain;
     }
 } catch (e) {
-    console.log("TrustManagerImpl verifyChain nout found below 7.0");
+    quiet_send("TrustManagerImpl verifyChain nout found below 7.0");
 }
+    // OpenSSLSocketImpl
+try {
+    var OpenSSLSocketImpl = Java.use('com.android.org.conscrypt.OpenSSLSocketImpl');
+    OpenSSLSocketImpl.verifyCertificateChain.implementation = function (certRefs, authMethod) {
+        quiet_send('OpenSSLSocketImpl.verifyCertificateChain');
+    }
+
+    quiet_send('OpenSSLSocketImpl pinning')
+} catch (err) {
+    quiet_send('OpenSSLSocketImpl pinner not found');
+}
+// Trustkit
+try {
+    var Activity = Java.use("com.datatheorem.android.trustkit.pinning.OkHostnameVerifier");
+    Activity.verify.overload('java.lang.String', 'javax.net.ssl.SSLSession').implementation = function (str) {
+        quiet_send('Trustkit.verify1: ' + str);
+        return true;
+    };
+    Activity.verify.overload('java.lang.String', 'java.security.cert.X509Certificate').implementation = function (str) {
+        quiet_send('Trustkit.verify2: ' + str);
+        return true;
+    };
+
+    quiet_send('Trustkit pinning')
+} catch(err) {
+    quiet_send('Trustkit pinner not found')
+}
+
 // -- Sample Java
 //
 // "Generic" TrustManager Example
