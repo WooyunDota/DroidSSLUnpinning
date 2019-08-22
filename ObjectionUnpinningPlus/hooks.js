@@ -203,12 +203,12 @@ WebViewClient.onReceivedError.overload('android.webkit.WebView', 'android.webkit
 
 /* libcore/luni/src/main/java/javax/net/ssl/TrustManagerFactory.java */
 /* public final TrustManager[] getTrustManager() */
-
-var TrustManagerFactory = Java.use("javax.net.ssl.TrustManagerFactory");
-TrustManagerFactory.getTrustManagers.implementation = function(){
-    quiet_send("TrustManagerFactory getTrustManagers invoked");
-    return TrustManagers;
-}
+/* TrustManagerFactory.getTrustManagers maybe cause X509TrustManagerExtensions error  */
+// var TrustManagerFactory = Java.use("javax.net.ssl.TrustManagerFactory");
+// TrustManagerFactory.getTrustManagers.implementation = function(){
+//     quiet_send("TrustManagerFactory getTrustManagers invoked");
+//     return TrustManagers;
+// }
 
 var HttpsURLConnection = Java.use("javax.net.ssl.HttpsURLConnection");
 /* libcore/luni/src/main/java/javax/net/ssl/HttpsURLConnection.java */
