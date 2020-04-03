@@ -17,6 +17,7 @@
 	- Apache Http client (support partly)
 	- OpenSSLSocketImpl
 	- TrustKit
+	- Cronet
 - [x] 若有没有覆盖到的场景可以联系我微博https://weibo.com/luoding1991.
 - [x] 如遇双向锁定即客户端锁定后服务端也对客户端证书验证checkClientTrusted,还需将证书文件导入代理软件,可能会有密码但必然会存在客户端中.
 - [x] xposed版本直接使用 https://github.com/Fuzion24/JustTrustMe 建议自己编译.
